@@ -1,0 +1,9 @@
+---
+- hosts: #----#        #The desired hosts
+  gather_facts: no
+  tasks:
+      - name: Check logged on accounts 
+        shell: w -s | grep -e "user" && w -s | tr -s ' ' | grep -ivE "*user." | cut -d ' ' -f-1 | sort | uniq -c
+        register: out
+      - debug: var=out.stdout_lines
+
