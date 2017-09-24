@@ -1,0 +1,21 @@
+---
+
+- name: Configure the yum repository
+  lineinfile:
+      path: /etc/yum.repos.d/CentOS-Base.repo
+      line: 'exclude=postgresql*' state=present
+      insertafter: {{ item }}
+      with_items:
+          - '{{ repo_sections }}'
+            
+- name: Install the pgdg rpm file
+  yum:
+      name: {{ item }}
+      state: present
+      with_items:
+          - '{{ pgdg_rpm }}'
+      
+- name: Install the postgresql packages in CentOS
+  yum: name={{ item }} state=installed
+  with_items:
+      - '{{ postgresql_pkgs }}'
