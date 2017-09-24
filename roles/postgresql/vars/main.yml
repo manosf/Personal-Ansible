@@ -1,0 +1,13 @@
+---
+
+pgdg_rpm:
+    - https://download.postgresql.org/pub/repos/yum/9.6/redhat/rhel-7-x86_64/pgdg-centos96-9.6-3.noarch.rpm
+  
+postgresql_pkgs:
+    - postgresql96-server
+    - postgresql96-contrib
+    - pg_repack96
+    
+repo_sections:
+    - '^\[base\]$'
+    - '^\[updates\]$'
