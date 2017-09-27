@@ -26,4 +26,8 @@
       enabled: yes
       state: started
 
-
+- name: Initialize Postgres
+  command: /usr/pgsql-9.6/bin/postgresql96-setup initdb
+  environment:
+    PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+  become: true
