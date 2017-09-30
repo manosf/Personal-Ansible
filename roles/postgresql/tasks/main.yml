@@ -31,3 +31,44 @@
   environment:
     PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
   become: true
+
+- name: Modify configuration of "postgresql.conf"
+    lineinfile:
+        dest: /var/lib/pgsql/{{ version }}/data/postgresql.conf
+        line: "include 'server.conf'" state=present
+
+- name: Create ROLE replicant
+    postgresql_user:
+        db: postgres
+        login_unix_socket: /tmp
+        name: replicant
+        password: "{{ passwd }}"
+        role_attr_flags: LOGIN,REPLICATION
+
+- name: Modify configuration of "server.conf"
+    blockinfile:
+        create: yes
+        dest: /var/lib/pgsql/{{ version }}/data/server.conf
+        block: |
+            listen_addresses = '*'
+            wal_level = hot_standby
+            checkpoint_segments = 10
+            max_wal_senders = 6
+            wal_keep_segments = 10
+            hot_standby = on
+
+- name: Modify configuration of "pg_hba.conf"
+    blockinfile:
+        path: /var/lib/pgsql/{{ version }}/data/pg_hba.conf
+        block: |
+            host    all             all             0.0.0.0/0                md5
+            host    replication     replicant       0.0.0.0/0                md5
+    notify: 
+        - Restart postgresql
+
+- name: Update environment variables in UNIX accounts
+    blockinfile:
+        create: yes
+        dest: /var/lib/pgsql/.pgsql_profile
+        block: |
+            export PGHOST=/tmp PAGER=less PGDATA=/var/lib/pgsql/9.6/data
