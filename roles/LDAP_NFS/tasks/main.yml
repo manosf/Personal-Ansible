@@ -1,0 +1,29 @@
+---
+
+- name: Install 'nfs-client' and 'autofs'
+    apt:
+        name: {{ item }}
+        update-cache: yes
+        state: present
+    with_items:
+        - '{{ nfs_pkgs }}'
+
+- name: Set domain name
+    lineinfile:
+        path: /etc/idmapd.conf
+        line: 'Domain = {{ LDAP_IP }}' state=present
+
+- name: Mount remote LDAP home on local home.
+    command: mount -t nfs {{ LDAP_IP }}:/home /home
+
+- name: Declare automount on 'fstab'
+    lineinfile:
+        path: /etc/fstab
+        line: '{{ LDAP_IP }}:/home   /home  nfs     defaults        0       0' state=present
+        insertafter: EOF
+
+- name: Modify on 'auto.master'
+    lineinfile:
+        path: /etc/auto.master
+        line: '/-   /etc/auto.mount' state=present
+        insertafter: EOF
