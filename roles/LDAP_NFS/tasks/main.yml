@@ -22,8 +22,36 @@
         line: '{{ LDAP_IP }}:/home   /home  nfs     defaults        0       0' state=present
         insertafter: EOF
 
-- name: Modify on 'auto.master'
+- name: Modify 'auto.master'
     lineinfile:
         path: /etc/auto.master
         line: '/-   /etc/auto.mount' state=present
         insertafter: EOF
+- file:
+    path: /etc/auto.mount
+    state: touch
+
+- name: Configure auto mount in 'auto.mount'
+    lineinfile:
+        path: /etc/auto.master
+        line: '/mntdir -fstype=nfs,rw {{ LDAP_IP }}:/home' state=present
+- file: 
+    path: /etc/mntdir
+    state: directory
+    notify:
+        - Restart autofs
+- name: Modify 'nsswitch.conf'
+    lineinfile: 
+        path: /etc/nsswitch.conf
+        line: 'hosts:          files mdns4_minimal [NOTFOUND=return] dns mdns4' state=present
+        insertafter: ^#$ 
+
+- name: Configure 'nslcd'
+    blockinfile:
+        block: |
+            uri             ldap://{{ LDAP_IP }}
+            base            dc={{ item[0] }},dc={{ item[1] }},dc={{ item[2] }}
+            ssl             on
+            tls_reqcert     allow
+    with_items: 
+        - '{{ LDAP_SUFFIX }}'
