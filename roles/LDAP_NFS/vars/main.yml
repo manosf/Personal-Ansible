@@ -1,0 +1,7 @@
+---
+
+#Specify the LDAP IP Address
+LDAP_IP: 10.1.10.1 
+
+#Specify the LDAP suffix in a list
+LDAP_SUFFIX: ['cs', 'unipi', 'gr']
