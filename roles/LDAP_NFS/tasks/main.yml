@@ -40,14 +40,34 @@
     state: directory
     notify:
         - Restart autofs
+  
+- name: Comment 'hosts' line before replacing
+    replace:
+        path: /etc/nsswitch.conf
+        regexp: 'hosts'
+        replace: '#hosts'  
+
 - name: Modify 'nsswitch.conf'
     lineinfile: 
         path: /etc/nsswitch.conf
         line: 'hosts:          files mdns4_minimal [NOTFOUND=return] dns mdns4' state=present
-        insertafter: ^#$ 
+        insertafter: '^#$'
+
+- name: Comment 'uri' line before replacing
+    replace:
+        path: /etc/nslcd.conf
+        regexp: 'uri'
+        replace: '#uri'
+
+- name: Comment out 'tls_cacertfile' line
+    replace:
+        path: /etc/nslcd.conf
+        regexp: 'tls_cacertfile'
+        replace: '#tls_cacertfile'
 
 - name: Configure 'nslcd'
     blockinfile:
+        path: /etc/nslcd.conf
         block: |
             uri             ldap://{{ LDAP_IP }}
             base            dc={{ item[0] }},dc={{ item[1] }},dc={{ item[2] }}
